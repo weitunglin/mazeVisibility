@@ -20,7 +20,7 @@
 #include "MazeWindow.h"
 #include <Fl/math.h>
 #include <Fl/gl.h>
-#include <GL/glu.h>
+#include <FL/glu.h>
 #include <stdio.h>
 
 
