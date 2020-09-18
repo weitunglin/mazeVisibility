@@ -67,11 +67,12 @@ draw(void)
 //=========================================================================
 {
 	float   focal_length;
-
+	cout << "valid:" << (int)valid() << endl;
 	if ( ! valid() ) {
 		// The OpenGL context may have been changed
 		// Set up the viewport to fill the window.
 		glViewport(0, 0, w(), h());
+		cout << "w:" << w() << ",h:" << h() << endl;
 
 		// We are using orthogonal viewing for 2D. This puts 0,0 in the
 		// middle of the screen, and makes the image size in view space
@@ -104,7 +105,6 @@ draw(void)
 		glVertex2f(-w() * 0.5f, 0.0       );
 		glVertex2f( w() * 0.5f, 0.0       );
 	glEnd();
-
 
 	if ( maze ) {
 		// Set the focal length. We can do this because we know the
@@ -205,20 +205,18 @@ handle(int event)
 			x_last = Fl::event_x();
 			y_last = Fl::event_y();
 			return 1;
-			case FL_RELEASE:
+		case FL_RELEASE:
 			down = false;
 			return 1;
 		case FL_KEYBOARD:
-			/*
-			if ( Fl::event_key() == FL_Up )	{
-				z_key = 1;
-				return 1;
-			}
-			if ( Fl::event_key() == FL_Down ){
-				z_key = -1;
-				return 1;
-			}
-			*/
+			// if ( Fl::event_key() == FL_Up )	{
+			// 	z_key = 1;
+			// 	return 1;
+			// }
+			// if ( Fl::event_key() == FL_Down ){
+			// 	z_key = -1;
+			// 	return 1;
+			// }
 			return Fl_Gl_Window::handle(event);
 		case FL_FOCUS:
 		case FL_UNFOCUS:
