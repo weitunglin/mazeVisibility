@@ -20,13 +20,11 @@
 #ifndef _MAZEWINDOW_H_
 #define _MAZEWINDOW_H_
 
-#include <iostream>
 #include <Fl/Fl.h>
 #include <Fl/Fl_Gl_Window.h>
-
-#include "Maze.h"
-
+#include <iostream>
 using namespace std;
+#include "Maze.h"
 
 // Subclass the Fl_Gl_Window because we want to draw OpenGL in here.
 class MazeWindow : public Fl_Gl_Window {
@@ -71,4 +69,3 @@ class MazeWindow : public Fl_Gl_Window {
 
 
 #endif
-

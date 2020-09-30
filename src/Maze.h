@@ -19,7 +19,9 @@
 #ifndef _MAZE_H_
 #define _MAZE_H_
 
+#include <iostream>
 #include <FL/math.h> // Use FLTK's math header because it defines M_PI
+#include <FL/gl.h>
 #include "Cell.h"
 
 //************************************************************************
@@ -98,6 +100,8 @@ class Maze {
 		// THIS IS THE FUINCTION YOU SHOULD MODIFY.
 		void	Draw_View(const float);
 
+		void Draw_Wall(const float[2], const float[2], const float[3]);
+
 		// Save the maze to a file of the given name.
 		bool	Save(const char*);
 
@@ -155,4 +159,3 @@ class Maze {
 
 
 #endif
-

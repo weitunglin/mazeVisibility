@@ -67,12 +67,11 @@ draw(void)
 //=========================================================================
 {
 	float   focal_length;
-	cout << "valid:" << (int)valid() << endl;
+
 	if ( ! valid() ) {
 		// The OpenGL context may have been changed
 		// Set up the viewport to fill the window.
-		glViewport(0, 0, w(), h());
-		cout << "w:" << w() << ",h:" << h() << endl;
+		glViewport(0, 0, 2*w(), 2*h());
 
 		// We are using orthogonal viewing for 2D. This puts 0,0 in the
 		// middle of the screen, and makes the image size in view space
@@ -85,6 +84,12 @@ draw(void)
 
 	// Clear the screen.
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 
 	glBegin(GL_QUADS);
 		// Draw the "floor". It is an infinite plane perpendicular to
@@ -106,6 +111,7 @@ draw(void)
 		glVertex2f( w() * 0.5f, 0.0       );
 	glEnd();
 
+
 	if ( maze ) {
 		// Set the focal length. We can do this because we know the
 		// field of view and the size of the image in view space. Note
@@ -118,6 +124,49 @@ draw(void)
 		// Note that all the information that is required to do the
 		// transformations and projection is contained in the Maze class,
 		// plus the focal length.
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		float aspect = (float)w() / h();
+		gluPerspective(maze->viewer_fov, aspect, 0.01, 200);
+		float projection_matrix[16];
+		glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix);
+
+		cout << "--- projection matrix ---" << endl;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				cout << projection_matrix[i * 4 + j] << " ";
+			}
+			cout << endl;
+		}
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		/*---view position ---
+		6.21853, 23.9765, 0
+		--- model matrix ---
+		2.14451 0 0 0
+		0 2.14451 0 0
+		0 0 - 1.0001 - 1
+		0 0 - 0.020001 0*/
+		cout << "-- view position ---" << endl;
+		cout << maze->viewer_posn[Maze::X] << "," << maze->viewer_posn[Maze::Y] << "," << maze->viewer_posn[Maze::Z] << endl;
+		float viewer_pos[3] = { maze->viewer_posn[Maze::Y], 0.0f, maze->viewer_posn[Maze::X] };
+		gluLookAt(viewer_pos[Maze::X], viewer_pos[Maze::Y], viewer_pos[Maze::Z],
+			viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
+			viewer_pos[Maze::Y],
+			viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)),
+			0.0, 1.0, 0.0);
+		float model_matrix[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, model_matrix);
+		cout << "--- model matrix ---" << endl;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				cout << model_matrix[i * 4 + j] << " ";
+			}
+			cout << endl;
+		}
 		maze->Draw_View(focal_length);
 	}
 }
@@ -205,18 +254,20 @@ handle(int event)
 			x_last = Fl::event_x();
 			y_last = Fl::event_y();
 			return 1;
-		case FL_RELEASE:
+			case FL_RELEASE:
 			down = false;
 			return 1;
 		case FL_KEYBOARD:
-			// if ( Fl::event_key() == FL_Up )	{
-			// 	z_key = 1;
-			// 	return 1;
-			// }
-			// if ( Fl::event_key() == FL_Down ){
-			// 	z_key = -1;
-			// 	return 1;
-			// }
+			/*
+			if ( Fl::event_key() == FL_Up )	{
+				z_key = 1;
+				return 1;
+			}
+			if ( Fl::event_key() == FL_Down ){
+				z_key = -1;
+				return 1;
+			}
+			*/
 			return Fl_Gl_Window::handle(event);
 		case FL_FOCUS:
 		case FL_UNFOCUS:
@@ -226,5 +277,4 @@ handle(int event)
 	// Pass any other event types on the superclass.
 	return Fl_Gl_Window::handle(event);
 }
-
 
