@@ -150,14 +150,14 @@ draw(void)
 		float z_near = 0.01, z_far = 200;
 		ComputeProjectionMatrix(projection_matrix, maze->viewer_fov, aspect_ratio, z_near, z_far);
 		glMultMatrixf(projection_matrix);
-		cout << maze->viewer_fov << endl;
-		cout << "--- projection matrix ---" << endl;
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				cout << projection_matrix[i * 4 + j] << " ";
-			}
-			cout << endl;
-		}
+		// cout << maze->viewer_fov << endl;
+		// cout << "--- projection matrix ---" << endl;
+		// for (int i = 0; i < 4; i++) {
+		// 	for (int j = 0; j < 4; j++) {
+		// 		cout << projection_matrix[i * 4 + j] << " ";
+		// 	}
+		// 	cout << endl;
+		// }
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		/*---view position ---
@@ -167,8 +167,8 @@ draw(void)
 		0 2.14451 0 0
 		0 0 - 1.0001 - 1
 		0 0 - 0.020001 0*/
-		cout << "-- view position ---" << endl;
-		cout << maze->viewer_posn[Maze::X] << "," << maze->viewer_posn[Maze::Y] << "," << maze->viewer_posn[Maze::Z] << endl;
+		// cout << "-- view position ---" << endl;
+		// cout << maze->viewer_posn[Maze::X] << "," << maze->viewer_posn[Maze::Y] << "," << maze->viewer_posn[Maze::Z] << endl;
 		float viewer_pos[3] = { maze->viewer_posn[Maze::Y], 0.0f, maze->viewer_posn[Maze::X] };
 		// gluLookAt(viewer_pos[Maze::X], viewer_pos[Maze::Y], viewer_pos[Maze::Z],
 		// 	viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
@@ -190,13 +190,13 @@ draw(void)
 			up); //< up
 		glMultMatrixf(model_matrix);
 		glTranslatef(-viewer_pos[Maze::X], -viewer_pos[Maze::Y], -viewer_pos[Maze::Z]);
-		cout << "--- model matrix ---" << endl;
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				cout << model_matrix[i * 4 + j] << " ";
-			}
-			cout << endl;
-		}
+		// cout << "--- model matrix ---" << endl;
+		// for (int i = 0; i < 4; i++) {
+		// 	for (int j = 0; j < 4; j++) {
+		// 		cout << model_matrix[i * 4 + j] << " ";
+		// 	}
+		// 	cout << endl;
+		// }
 		maze->Draw_View(focal_length);
 	}
 }
