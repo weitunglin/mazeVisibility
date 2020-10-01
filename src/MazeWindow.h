@@ -25,6 +25,7 @@
 #include <iostream>
 using namespace std;
 #include "Maze.h"
+#include "Vector3.h"
 
 // Subclass the Fl_Gl_Window because we want to draw OpenGL in here.
 class MazeWindow : public Fl_Gl_Window {
@@ -47,6 +48,8 @@ class MazeWindow : public Fl_Gl_Window {
 		// Update the view according to any events that have happened since
 		// the last time this method was called.
 		bool	Update(float);
+
+		void ComputeModelMatrix(float*, Vec3&, Vec3&, Vec3&);
 
 	private:
 		bool	Drag(float);	// The function to call for mouse drag events

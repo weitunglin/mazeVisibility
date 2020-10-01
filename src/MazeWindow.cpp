@@ -71,7 +71,7 @@ draw(void)
 	if ( ! valid() ) {
 		// The OpenGL context may have been changed
 		// Set up the viewport to fill the window.
-		glViewport(0, 0, 2*w(), 2*h());
+		glViewport(0, 0, w(), h());
 
 		// We are using orthogonal viewing for 2D. This puts 0,0 in the
 		// middle of the screen, and makes the image size in view space
@@ -153,13 +153,26 @@ draw(void)
 		cout << "-- view position ---" << endl;
 		cout << maze->viewer_posn[Maze::X] << "," << maze->viewer_posn[Maze::Y] << "," << maze->viewer_posn[Maze::Z] << endl;
 		float viewer_pos[3] = { maze->viewer_posn[Maze::Y], 0.0f, maze->viewer_posn[Maze::X] };
-		gluLookAt(viewer_pos[Maze::X], viewer_pos[Maze::Y], viewer_pos[Maze::Z],
-			viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
-			viewer_pos[Maze::Y],
-			viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)),
-			0.0, 1.0, 0.0);
+		// gluLookAt(viewer_pos[Maze::X], viewer_pos[Maze::Y], viewer_pos[Maze::Z],
+		// 	viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
+		// 	viewer_pos[Maze::Y],
+		// 	viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)),
+		// 	0.0, 1.0, 0.0);
+		// float model_matrix[16];
+		// glGetFloatv(GL_MODELVIEW_MATRIX, model_matrix);
+
 		float model_matrix[16];
-		glGetFloatv(GL_MODELVIEW_MATRIX, model_matrix);
+		Vec3 eye(viewer_pos[Maze::X], viewer_pos[Maze::Y], viewer_pos[Maze::Z]);
+		Vec3 center(viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
+				viewer_pos[Maze::Y],
+				viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)));
+		Vec3 up(0.0, 1.0, 0.0);
+		ComputeModelMatrix(model_matrix,
+			eye, //< eye
+			center, //< center
+			up); //< up
+		glMultMatrixf(model_matrix);
+		glTranslatef(-viewer_pos[Maze::X], -viewer_pos[Maze::Y], -viewer_pos[Maze::Z]);
 		cout << "--- model matrix ---" << endl;
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
@@ -171,6 +184,48 @@ draw(void)
 	}
 }
 
+/**
+ * @brief compute model matrix (replace gluLookAt function)
+ * 
+ * @param matrix result (model) matrix (column-major matrix)
+ * @param eye vector of points that indicates eye position in world space
+ * @param center vector of points that indicates the center of the position that you want to look at
+ * @param up usually (0.0, 1.0, 0.0)
+ */
+void MazeWindow::ComputeModelMatrix(float* matrix, Vec3& eye, Vec3& center, Vec3& up) {
+	Vec3 forward(center[Vec3::X] - eye[Vec3::X], center[Vec3::Y] - eye[Vec3::Y], center[Vec3::Z] - eye[Vec3::Z]);
+	forward.norm();
+
+	Vec3 side = crossProduct(forward, up);
+	side.norm();
+
+	up = crossProduct(side, forward);
+
+	// put values into matrix
+	// column 1
+	for (int i = 0; i <= 2; i++) {
+		matrix[i*4] = side[i];
+	}
+	matrix[12] = 0.0;
+
+	// column 2
+	for (int i = 0; i <= 2; i++) {
+		matrix[i*4+1] = up[i];
+	}
+	matrix[13] = 0.0;
+
+	// column 3
+	for (int i = 0; i <= 2; i++) {
+		matrix[i*4+2] = -forward[i];
+	}
+	matrix[14] = 0.0;
+
+	// column 4
+	for (int i = 0; i <= 2; i++) {
+		matrix[i*4+3] = 0.0;
+	}
+	matrix[15] = 1.0;
+}
 
 //*************************************************************************
 //

@@ -6,11 +6,11 @@ LDFLAGS = $(shell fltk-config --use-gl --use-glut --use-images --ldflags )
 LDSTATIC = $(shell fltk-config --use-gl --use-glut --use-images --ldstaticflags )
 
 TARGET = runMaze buildMaze
-SRCS = Cell.cpp Edge.cpp LineSeg.cpp \
+SRCS = Cell.cpp Edge.cpp LineSeg.cpp Vector3.cpp \
     MapWidget.cpp Maze.cpp MazeWindow.cpp RunMaze.cpp Vertex.cpp
 OBJS = $(SRCS:.cpp=.o)
 
-BUILDSRCS = Cell.cpp Edge.cpp LineSeg.cpp \
+BUILDSRCS = Cell.cpp Edge.cpp LineSeg.cpp Vector3.cpp \
 	MapWidget.cpp Maze.cpp MazeWindow.cpp BuildMaze.cpp Vertex.cpp
 BUILDOBJS=$(BUILDSRCS:.cpp=.o)
 
