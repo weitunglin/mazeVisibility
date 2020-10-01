@@ -67,10 +67,10 @@ Vec3::Vec3(const Vec3& rhs) {
  */
 Vec3::~Vec3() {
     if (data) {
-        cout << "exist" << endl;
+        // cout << "exist" << endl;
         // delete[] data;
     } else {
-        cout << "not exist" << endl;
+        // cout << "not exist" << endl;
     }
 }
 

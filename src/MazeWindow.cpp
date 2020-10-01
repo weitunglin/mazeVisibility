@@ -71,7 +71,7 @@ draw(void)
 	if ( ! valid() ) {
 		// The OpenGL context may have been changed
 		// Set up the viewport to fill the window.
-		glViewport(0, 0, w(), h());
+		glViewport(0, 0, 2*w(), 2*h());
 
 		// We are using orthogonal viewing for 2D. This puts 0,0 in the
 		// middle of the screen, and makes the image size in view space
@@ -129,11 +129,28 @@ draw(void)
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
-		float aspect = (float)w() / h();
-		gluPerspective(maze->viewer_fov, aspect, 0.01, 200);
-		float projection_matrix[16];
-		glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix);
+		float aspect_ratio = (float)w() / h();
+		// gluPerspective(maze->viewer_fov, aspect_ratio, 0.01, 200);
+		// float projection_matrix[16];
+		// glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix);
 
+		// --- projection matrix ---
+		// 2.41421 0 0 0 
+		// 0 2.41421 0 0 
+		// 0 0 -1.0001 -1 
+		// -0 -0 -0.020001 -0 
+
+		// --- projection matrix ---
+		// 25.1195 0 0 0 
+		// 0 25.1195 0 0 
+		// 0 0 -1.0001 -1 
+		// 0 0 -0.020001 0 
+
+		float projection_matrix[16];
+		float z_near = 0.01, z_far = 200;
+		ComputeProjectionMatrix(projection_matrix, maze->viewer_fov, aspect_ratio, z_near, z_far);
+		glMultMatrixf(projection_matrix);
+		cout << maze->viewer_fov << endl;
 		cout << "--- projection matrix ---" << endl;
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
@@ -225,6 +242,38 @@ void MazeWindow::ComputeModelMatrix(float* matrix, Vec3& eye, Vec3& center, Vec3
 		matrix[i*4+3] = 0.0;
 	}
 	matrix[15] = 1.0;
+}
+
+/**
+ * @brief compute projection matrix (replace gluPerespective function)
+ * 
+ * @param matrix result (projection) matrix
+ * @param fovy camera visible range, in degrees
+ * @param aspect_ratio w() / h()
+ * @param z_near usually 0.01
+ * @param z_far usually 200
+ */
+void MazeWindow::ComputeProjectionMatrix(float* matrix, float fovy, float aspect_ratio, float z_near, float z_far) {
+	float f = 1.0 / tan(fovy * M_PI / 360.0);
+
+	// put values into matrix
+	
+	// column 1
+	matrix[0] = f / aspect_ratio;
+	matrix[1] = matrix[2] = matrix[3] = 0.0;
+
+	// column 2
+	matrix[5] = f;
+	matrix[4] = matrix[6] = matrix[7] = 0.0;
+
+	// column 3
+	matrix[10] = (z_far + z_near) / (z_near - z_far);
+	matrix[8] = matrix[9] = 0.0;
+	matrix[11] = -1.0;
+
+	// column 4
+	matrix[14] = (2 * z_far * z_near) / (z_near - z_far);
+	matrix[12] = matrix[13] = matrix[15] = 0.0;
 }
 
 //*************************************************************************

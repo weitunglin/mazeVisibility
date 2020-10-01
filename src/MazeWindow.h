@@ -50,6 +50,7 @@ class MazeWindow : public Fl_Gl_Window {
 		bool	Update(float);
 
 		void ComputeModelMatrix(float*, Vec3&, Vec3&, Vec3&);
+		void ComputeProjectionMatrix(float*, float, float, float, float);
 
 	private:
 		bool	Drag(float);	// The function to call for mouse drag events
