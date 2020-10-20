@@ -7,11 +7,11 @@ LDSTATIC = $(shell fltk-config --use-gl --use-glut --use-images --ldstaticflags 
 
 TARGET = runMaze buildMaze
 SRCS = Cell.cpp Edge.cpp LineSeg.cpp Vector3.cpp \
-    MapWidget.cpp Maze.cpp MazeWindow.cpp RunMaze.cpp Vertex.cpp
+    MapWidget.cpp Maze.cpp MazeWindow.cpp RunMaze.cpp Vertex.cpp Matrices.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 BUILDSRCS = Cell.cpp Edge.cpp LineSeg.cpp Vector3.cpp \
-	MapWidget.cpp Maze.cpp MazeWindow.cpp BuildMaze.cpp Vertex.cpp
+	MapWidget.cpp Maze.cpp MazeWindow.cpp BuildMaze.cpp Vertex.cpp Matrices.cpp
 BUILDOBJS=$(BUILDSRCS:.cpp=.o)
 
 .SUFFIXES: .o .cpp

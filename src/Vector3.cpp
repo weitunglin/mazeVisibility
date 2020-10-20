@@ -88,6 +88,11 @@ float& Vec3::operator[](int index) {
     return data[index];
 }
 
+ostream& operator<<(ostream& os, const Vec3& rhs) {
+    os << rhs.data[rhs.X] << ", " << rhs.data[rhs.Y] << ", " << rhs.data[rhs.Z] << "\n";
+    return os;
+}
+
 /**
  * @brief perform dot operation on these two vectors
  * 
@@ -131,4 +136,31 @@ void Vec3::norm(void) {
     for (int i = 0; i < 3; i++) {
         data[i] /= mag;
     }
+}
+
+/**
+ * @brief return x value of the vector
+ * 
+ * @return float 
+ */
+float Vec3::x() const {
+    return data[Vec3::X];
+}
+
+/**
+ * @brief return y value of the vector
+ * 
+ * @return float 
+ */
+float Vec3::y() const {
+    return data[Vec3::Y];
+}
+
+/**
+ * @brief return z value of the vector
+ * 
+ * @return float 
+ */
+float Vec3::z() const {
+    return data[Vec3::Z];
 }

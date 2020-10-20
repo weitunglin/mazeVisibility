@@ -50,6 +50,7 @@ class MazeWindow : public Fl_Gl_Window {
 		bool	Update(float);
 
 		void ComputeModelMatrix(float*, Vec3&, Vec3&, Vec3&);
+
 		void ComputeProjectionMatrix(float*, float, float, float, float);
 
 	private:
@@ -68,6 +69,9 @@ class MazeWindow : public Fl_Gl_Window {
 							// pressed. A value of 1 means move up, a value of -1
 							// means move down. 0 means do nothing.
 		float   d_down;// The view direction when the mouse button was pushed
+		int x_k_move;
+		int y_k_move;
+		int k_down;
 
 };
 

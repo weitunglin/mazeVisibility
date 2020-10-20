@@ -627,47 +627,288 @@ Draw_Map(int min_x, int min_y, int max_x, int max_y)
 //   THIS IS THE FUINCTION YOU SHOULD MODIFY.
 //======================================================================
 void Maze::
-Draw_View(const float focal_dist)
+Draw_View(const float focal_dist, float* projection_matrix, float* modelview_matrix)
 //======================================================================
 {
 	frame_num++;
 
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
+	// glClear(GL_DEPTH_BUFFER_BIT);
+	// glEnable(GL_DEPTH_TEST);
+	int max = max_xp > max_yp ? max_xp : max_yp;
+	LineSeg leftFru(viewer_posn[X], viewer_posn[Y], viewer_posn[X] +  2 * max * (cos(To_Radians(viewer_dir + viewer_fov / 2.0))), viewer_posn[Y] + 2 * max * (sin(To_Radians(viewer_dir + viewer_fov / 2.0))));
+	LineSeg rightFru(viewer_posn[X], viewer_posn[Y], viewer_posn[X] + 2 * max * (cos(To_Radians(viewer_dir - viewer_fov / 2.0))), viewer_posn[Y] + 2 * max * (sin(To_Radians(viewer_dir - viewer_fov / 2.0))));
 
-	for (int i = 0; i < (int)this->num_edges; i++) {
-		float edge_start[2] = {
-			this->edges[i]->endpoints[Edge::START]->posn[Vertex::X],
-			this->edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
-		};
-		float edge_end[2] = {
-			this->edges[i]->endpoints[Edge::END]->posn[Vertex::X],
-			this->edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
-		};
+	// cout << "\n\nstart\n";
+	// cout << viewer_dir << endl;
+	// cout << "("<< leftFru.start[0] << " , " << leftFru.start[1] << ") (" << leftFru.end[0] << " , " << leftFru.end[1] << ")" << endl;
+	// cout << "("<< rightFru.start[0] << " , " << rightFru.start[1] << ") (" << rightFru.end[0] << " , " << rightFru.end[1] << ")" << endl;
+	// cout << max << endl;
+	// cout << leftFru.start[0] << " " << leftFru.start[1] << endl;
+	// cout << leftFru.end[0] << " " << leftFru.end[1] << endl;
+	// cout << rightFru.end[0] << " " << rightFru.end[1] << endl;
 
-		float color[3] = { this->edges[i]->color[0], this->edges[i]->color[1], this->edges[i]->color[2] };
-		if (this->edges[i]->opaque) {
-			Draw_Wall(edge_start, edge_end, color);
-		}
-	}
+	// for (int i = 0; i < (int)this->num_edges; i++) {
+	// 	float edge_start[2] = {
+	// 		this->edges[i]->endpoints[Edge::START]->posn[Vertex::X],
+	// 		this->edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
+	// 	};
+	// 	float edge_end[2] = {
+	// 		this->edges[i]->endpoints[Edge::END]->posn[Vertex::X],
+	// 		this->edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
+	// 	};
+	// 	float color[3] = { this->edges[i]->color[0], this->edges[i]->color[1], this->edges[i]->color[2] };
+	// 	LineSeg edge(edges[i]);
+
+	// 	if (this->edges[i]->opaque) {
+	// 		// clip then draw
+	// 		float lpoint = leftFru.Cross_Param(edge), rpoint = rightFru.Cross_Param(edge);
+	// 		cout << lpoint << " " << rpoint << endl;
+	// 		if ((lpoint > 1 || lpoint < 0) && (rpoint > 1 || rpoint < 0)) {
+	// 			continue;
+	// 		}
+
+	// 		cout << "intersect\n";
+			
+	// 		Draw_Wall(edge_start, edge_end, color, projection_matrix, modelview_matrix);
+	// 	}
+	// }
+
 	//###################################################################
 	// TODO
 	// The rest is up to you!
 	//###################################################################
+	
+	Find_View_Cell(Maze::view_cell);
+	// cout << "start" << endl;
+	Draw_Cell(view_cell, projection_matrix, modelview_matrix, leftFru, rightFru);
+	// cout << "end" << endl;
+}
+
+void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matrix, LineSeg& leftFru, LineSeg& rightFru) {
+	for (int i = 0; i < 4; ++i) {
+		if (cell->edges[i]->opaque) {
+			float edge_start[2] = {
+				cell->edges[i]->endpoints[Edge::START]->posn[Vertex::X],
+				cell->edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
+			};
+			float edge_end[2] = {
+				cell->edges[i]->endpoints[Edge::END]->posn[Vertex::X],
+				cell->edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
+			};
+
+			LineSeg edge(cell->edges[i]);
+			float leftIntersectPoint = leftFru.Cross_Param(edge), rightIntersectPoint = rightFru.Cross_Param(edge);
+			float leftFruEdgeIntersect[2] = { 0.0 }, rightFruEdgeIntersect[2] = { 0.0 };
+	
+			bool leftFruInEdge = LineSeg::get_line_intersection(leftFru.start[0], leftFru.start[1], leftFru.end[0], leftFru.end[1],
+				edge_start[0], edge_start[1], edge_end[0], edge_end[1], &leftFruEdgeIntersect[0], &leftFruEdgeIntersect[1]);
+			bool rightFruInEdge = LineSeg::get_line_intersection(rightFru.start[0], rightFru.start[1], rightFru.end[0], rightFru.end[1],
+				edge_start[0], edge_start[1], edge_end[0], edge_end[1], &rightFruEdgeIntersect[0], &rightFruEdgeIntersect[1]);
+
+			// if start is inside frustum, set end with intersection
+			// else if end is inside frustum, set start with intersection
+			// else if both arenot inside frustim, set them with intersections
+			int startAngle = To_Degrees(atan2(edge_start[1] - viewer_posn[Y], edge_start[0] - viewer_posn[X]));
+			int endAngle = To_Degrees(atan2(edge_end[1] - viewer_posn[Y], edge_end[0] - viewer_posn[X]));
+			int leftAngle = (viewer_dir + viewer_fov / 2.0), rightAngle = (viewer_dir - viewer_fov / 2.0);
+
+			if (startAngle < 0.0) startAngle += 360;
+			if (endAngle < 0.0) endAngle += 360;
+			if (leftAngle < 0.0) leftAngle += 360;
+			if (rightAngle < 0.0) rightAngle += 360;
+			startAngle %= 360;
+			endAngle %= 360;
+			leftAngle %= 360;
+			rightAngle %= 360;
+
+			bool startInFru = (leftAngle > rightAngle) ? (rightAngle <= startAngle && startAngle <= leftAngle) : (rightAngle <= startAngle || startAngle <= leftAngle);
+			bool endInFru = (leftAngle > rightAngle) ? (rightAngle <= endAngle && endAngle <= leftAngle) : (rightAngle <= endAngle || endAngle <= leftAngle);
+
+			// ///
+			// cout << "---\n";
+			// cout << "start edge " << edge_start[0] << " , " << edge_start[1] << endl;			
+			// cout << "end edge " << edge_end[0] << " , " << edge_end[1] << endl;			
+			// cout << "IntersectPointValue " << leftIntersectPoint << " , " << rightIntersectPoint << endl;
+			// cout << "FruInEdge " << leftFruInEdge << " , " << rightFruInEdge << endl;
+			// cout << "left Intersects " << leftFruEdgeIntersect[0] << " , " << leftFruEdgeIntersect[1] << endl;
+			// cout << "right Intersects " << rightFruEdgeIntersect[0] << " , " << rightFruEdgeIntersect[1] << endl;
+			// cout << "Start & End angles " <<  startAngle << " " << endAngle << endl;
+			// cout << "Left & Right angles " << leftAngle << " " << rightAngle << endl;
+			// cout << "InFru " << startInFru << " " << endInFru << endl;
+			// cout << "---\n";
+			// ///
+
+			if (!leftFruInEdge && !rightFruInEdge) {
+				if (startInFru && endInFru) {
+					Draw_Wall(edge_start, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
+				} else {
+					continue;
+				}
+			}
+
+			if (leftFruInEdge && rightFruInEdge) {
+				// if (!startInFru && !endInFru) {
+					Draw_Wall(leftFruEdgeIntersect, rightFruEdgeIntersect, cell->edges[i]->color, projection_matrix, modelview_matrix);
+				// }
+			}
+			if (leftFruInEdge && !rightFruInEdge) {
+				if (endInFru) {
+					Draw_Wall(leftFruEdgeIntersect, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
+				} else if (startInFru) {
+					Draw_Wall(edge_start, leftFruEdgeIntersect, cell->edges[i]->color, projection_matrix, modelview_matrix);
+				} else {
+					Draw_Wall(edge_start, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
+				}
+			}
+			if (!leftFruInEdge && rightFruInEdge) {
+				if (startInFru) {
+					Draw_Wall(edge_start, rightFruEdgeIntersect, cell->edges[i]->color, projection_matrix, modelview_matrix);
+				} else if (endInFru) {
+					Draw_Wall(rightFruEdgeIntersect, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
+				} else {
+					Draw_Wall(edge_start, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
+				}
+			}			
+		} else {
+			Cell* next = cell->edges[i]->Neighbor(cell);
+			if (next == NULL) continue;
+			Draw_Cell(next, projection_matrix, modelview_matrix, leftFru, rightFru);
+		}
+	}
 }
 
 void Maze::
-Draw_Wall(const float start[2], const float end[2], const float color[3]) {
+Draw_Wall(const float start[2], const float end[2], const float color[3], float* projection_matrix, float* modelview_matrix) {
 	float edge0[3] = { start[Y], 0.0f, start[X] };
 	float edge1[3] = { end[Y], 0.0f, end[X] };
+
+	Matrix4 p(projection_matrix);
+	Matrix4 m(modelview_matrix);
+
+	Vector4 v1(start[Y], 1.0f, start[X], 1.0f);
+	Vector4 v2(end[Y], 1.0f, end[X], 1.0f);
+	Vector4 v3(end[Y], -1.0f, end[X], 1.0f);
+	Vector4 v4(start[Y], -1.0f, start[X], 1.0f);
+	
+	p *= m;
+	v1 = p * v1;
+	v2 = p * v2;
+	v3 = p * v3;
+	v4 = p * v4;
+
+	if (v1.w < 0 && v4.w < 0) return;
+	if (v2.w < 0 && v3.w < 0) return;
+
 	glBegin(GL_POLYGON);
 	glColor3fv(color);
-	glVertex3f(edge0[X], 1.0f, edge0[Z]);
-	glVertex3f(edge1[X], 1.0f, edge1[Z]);
-	glVertex3f(edge1[X], -1.0f, edge1[Z]);
-	glVertex3f(edge0[X], -1.0f, edge0[Z]);
+
+	v1 /= v1.w;
+	v2 /= v2.w;
+	v3 /= v3.w;
+	v4 /= v4.w;
+
+	// cout << v1 << v2 << v3 << v4 << endl;
+
+	glVertex2f(v1.x, v1.y);
+	glVertex2f(v2.x, v2.y);
+	glVertex2f(v3.x, v3.y);
+	glVertex2f(v4.x, v4.y);
+	// glVertex3f(v1.x, v1.y, v1.z);
+	// glVertex3f(v2.x, v2.y, v2.z);
+	// glVertex3f(v3.x, v3.y, v3.z);
+	// glVertex3f(v4.x, v4.y, v4.z);
+	// glVertex4f(v1.x, v1.y, v1.z, v1.w);
+	// glVertex4f(v2.x, v2.y, v2.z, v2.w);
+	// glVertex4f(v3.x, v3.y, v3.z, v3.w);
+	// glVertex4f(v4.x, v4.y, v4.z, v4.w);
+	// glVertex3f(edge0[X], 1.0f, edge0[Z]);
+	// glVertex3f(edge1[X], 1.0f, edge1[Z]);
+	// glVertex3f(edge1[X], -1.0f, edge1[Z]);
+	// glVertex3f(edge0[X], -1.0f, edge0[Z]);
 	glEnd();
 }
+
+int Maze::getCode(const Vector4& v) const {
+	int code = INSIDE;
+
+	if (v.x < x_min) {
+		code |= LEFT;
+	} else if (v.x > x_max) {
+		code |= RIGHT;
+	}
+	if (v.y < y_min) {
+		code |= BOTTOM;
+	} else if (v.y > y_max) {
+		code |= TOP;
+	}
+	if (v.z < z_min) {
+		code |= BEHIND;
+	} else if (v.z > z_max) {
+		code |= FRONT;
+	}
+
+	return code;
+}
+
+void Maze::Clip(Vector4& start, Vector4& end, Vector4& border) {
+	int code1 = getCode(start);
+	int code2 = getCode(end);
+
+	bool accept = false;
+	while(true) {
+		if ((code1 == 0) && (code2 == 0)) {
+			accept = true;
+			break;
+		} else if (code1 & code2) {
+			break;
+		}
+		else {
+			int code_out;
+			double x, y, z;
+
+			if (code1 != 0) {
+				code_out = code1;
+			} else {
+				code_out = code2;
+			}
+
+			if (code_out & TOP) {
+				x = start.x + (end.x - start.x) * (y_max - start.y) / (end.y - start.y);
+				y = y_max;
+				z = start.z + (end.z - start.z) * (y_max - start.y) / (end.y - start.y);
+			} else if (code_out & BOTTOM) {
+				x = start.x + (end.x - start.x) * (y_min - start.y) / (end.y - start.y);
+				y = y_min;
+				z = start.z + (end.z - start.z) * (y_min - start.y) / (end.y - start.y);
+			} else if (code_out & RIGHT) {
+				x = x_max;
+				y = start.y + (end.y - start.y) * (x_max - start.x) / (end.x - start.x);
+				z = start.z + (end.z - start.z) * (x_max - start.x) / (end.x - start.x);
+			} else if (code_out & LEFT) {
+				x = x_min;
+				y = start.y + (end.y - start.y) * (x_min - start.x) / (end.x - start.x);
+				z = start.z + (end.z - start.z) * (x_min - start.x) / (end.x - start.x);
+			} else if (code_out & BEHIND) {
+
+			} else if (code_out & FRONT) {
+
+			}
+
+			if (code_out == code1) {
+				start.x = x;
+				start.y = y;
+				start.z = z;
+				code1 = getCode(start);
+			} else {
+				end.x = x;
+				end.y = y;
+				end.z = z;
+				code2 = getCode(end);
+			}
+		}
+	}
+}
+
 
 //**********************************************************************
 //

@@ -37,6 +37,7 @@ MazeWindow(int x, int y, int width, int height, const char *label,Maze *m)
 
 	// The mouse button isn't down and there is no key pressed.
 	down = false;
+	k_down = false;
 	z_key = 0;
 }
 
@@ -129,27 +130,35 @@ draw(void)
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
 		float aspect_ratio = (float)w() / h();
 		// gluPerspective(maze->viewer_fov, aspect_ratio, 0.01, 200);
 		// float projection_matrix[16];
 		// glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix);
 
+        // --- viewer fovy ---
+		// 45
 		// --- projection matrix ---
 		// 2.41421 0 0 0 
 		// 0 2.41421 0 0 
 		// 0 0 -1.0001 -1 
-		// -0 -0 -0.020001 -0 
-
-		// --- projection matrix ---
-		// 25.1195 0 0 0 
-		// 0 25.1195 0 0 
-		// 0 0 -1.0001 -1 
 		// 0 0 -0.020001 0 
+		// -- view position ---
+		// 2,2,0
+		// --- model matrix ---
+		// -0.5 0 -0.866025 0
+		// 0 1 -0 0
+		// 0.866025 -0 -0.5 0
+		// -0.732051 0 2.73205 1 
 
 		float projection_matrix[16];
 		float z_near = 0.01, z_far = 200;
 		ComputeProjectionMatrix(projection_matrix, maze->viewer_fov, aspect_ratio, z_near, z_far);
-		glMultMatrixf(projection_matrix);
+		// glLoadMatrixf(projection_matrix);
+
+		// cout << "--- viewer fovy ---" << endl;
 		// cout << maze->viewer_fov << endl;
 		// cout << "--- projection matrix ---" << endl;
 		// for (int i = 0; i < 4; i++) {
@@ -158,17 +167,10 @@ draw(void)
 		// 	}
 		// 	cout << endl;
 		// }
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-		/*---view position ---
-		6.21853, 23.9765, 0
-		--- model matrix ---
-		2.14451 0 0 0
-		0 2.14451 0 0
-		0 0 - 1.0001 - 1
-		0 0 - 0.020001 0*/
+
 		// cout << "-- view position ---" << endl;
 		// cout << maze->viewer_posn[Maze::X] << "," << maze->viewer_posn[Maze::Y] << "," << maze->viewer_posn[Maze::Z] << endl;
+		
 		float viewer_pos[3] = { maze->viewer_posn[Maze::Y], 0.0f, maze->viewer_posn[Maze::X] };
 		// gluLookAt(viewer_pos[Maze::X], viewer_pos[Maze::Y], viewer_pos[Maze::Z],
 		// 	viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
@@ -183,13 +185,15 @@ draw(void)
 		Vec3 center(viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
 				viewer_pos[Maze::Y],
 				viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)));
+
+		// cout << "eye: " << eye << endl;
+		// cout << "center: " << center << endl;
 		Vec3 up(0.0, 1.0, 0.0);
 		ComputeModelMatrix(model_matrix,
 			eye, //< eye
 			center, //< center
 			up); //< up
-		glMultMatrixf(model_matrix);
-		glTranslatef(-viewer_pos[Maze::X], -viewer_pos[Maze::Y], -viewer_pos[Maze::Z]);
+
 		// cout << "--- model matrix ---" << endl;
 		// for (int i = 0; i < 4; i++) {
 		// 	for (int j = 0; j < 4; j++) {
@@ -197,7 +201,8 @@ draw(void)
 		// 	}
 		// 	cout << endl;
 		// }
-		maze->Draw_View(focal_length);
+		
+		maze->Draw_View(focal_length, projection_matrix, model_matrix);
 	}
 }
 
@@ -238,9 +243,9 @@ void MazeWindow::ComputeModelMatrix(float* matrix, Vec3& eye, Vec3& center, Vec3
 	matrix[14] = 0.0;
 
 	// column 4
-	for (int i = 0; i <= 2; i++) {
-		matrix[i*4+3] = 0.0;
-	}
+	matrix[12] = -side.x() * eye.x() - side.y() * eye.y() - side.z() * eye.z();
+	matrix[13] = -up.x() * eye.x() - up.y() * eye.y() - up.z() * eye.z();
+	matrix[14] = forward.x() * eye.x() + forward.y() * eye.y() + forward.z() * eye.z();
 	matrix[15] = 1.0;
 }
 
@@ -257,7 +262,7 @@ void MazeWindow::ComputeProjectionMatrix(float* matrix, float fovy, float aspect
 	float f = 1.0 / tan(fovy * M_PI / 360.0);
 
 	// put values into matrix
-	
+
 	// column 1
 	matrix[0] = f / aspect_ratio;
 	matrix[1] = matrix[2] = matrix[3] = 0.0;
@@ -291,18 +296,61 @@ Drag(float dt)
 		int   dy = y_down - y_last;
 		float dist;
 
+		if (x_k_move == 1) {
+			dx = 5;
+		} else if (x_k_move == -1) {
+			dx = -5;
+		}
+
+		if (y_k_move == 1) {
+			dy = 5;
+		} else if (y_k_move == -1) {
+			dy = -5;
+		}
+
 		// Set the viewing direction based on horizontal mouse motion.
 		maze->Set_View_Dir(d_down + 360.0f * dx / (float)w());
 
 		// Set the viewer's linear motion based on a speed (derived from
 		// vertical mouse motion), the elapsed time and the viewing direction.
-		dist = 10.0f * dt * dy / (float)h();
+		dist = 30.0f * dt * dy / (float)h();
+		x_move = dist * (float)cos(Maze::To_Radians(maze->viewer_dir));
+		y_move = dist * (float)sin(Maze::To_Radians(maze->viewer_dir));
+
+	}
+	else if (k_down) {
+		cout << "key down";
+		int	dx;
+		int dy;
+		float dist;
+
+		if (x_k_move == 1) {
+			dx = 10;
+		} else if (x_k_move == -1) {
+			dx = -10;
+		}
+
+		if (y_k_move == 1) {
+			dy = 10;
+		} else if (y_k_move == -1) {
+			dy = -10;
+		}
+
+		// Set the viewing direction based on horizontal mouse motion.
+		maze->Set_View_Dir(d_down + 360.0f * dx / (float)w());
+
+		// Set the viewer's linear motion based on a speed (derived from
+		// vertical mouse motion), the elapsed time and the viewing direction.
+		dist = 30.0f * dt * dy / (float)h();
+		cout << x_move << ", " << y_move << endl;
 		x_move = dist * (float)cos(Maze::To_Radians(maze->viewer_dir));
 		y_move = dist * (float)sin(Maze::To_Radians(maze->viewer_dir));
 	}
 	else {
 		x_move = 0.0;
 		y_move = 0.0;
+		x_k_move = 0;
+		y_k_move = 0;
 	}
 
 	// Update the z posn
@@ -327,7 +375,7 @@ Update(float dt)
 {
 	// Update the view
 
-	if ( down || z_key ) // Only do anything if the mouse button is down.
+	if ( k_down || down || z_key ) // Only do anything if the mouse button is down.
 		return Drag(dt);
 
 	// Nothing changed, so no need for a redraw.
@@ -346,6 +394,7 @@ handle(int event)
 	if (!maze)
 		return Fl_Gl_Window::handle(event);
 
+	int key;
 	// Event handling routine.
 	switch ( event ) {
 		case FL_PUSH:
@@ -358,21 +407,38 @@ handle(int event)
 			x_last = Fl::event_x();
 			y_last = Fl::event_y();
 			return 1;
-			case FL_RELEASE:
+		case FL_RELEASE:
 			down = false;
 			return 1;
-		case FL_KEYBOARD:
-			/*
-			if ( Fl::event_key() == FL_Up )	{
-				z_key = 1;
-				return 1;
+		case FL_KEYDOWN:
+			d_down = maze->viewer_dir;
+			k_down = true;
+			key = Fl::event_key();
+			if (key == (int)'w') {
+				x_k_move = 1;
+			} else if (key == (int)'s') {
+				x_k_move = -1;
+			} else if (key == (int)'a') {
+				y_k_move = 1;
+			} else if (key == (int)'d') {
+				y_k_move = -1;
 			}
-			if ( Fl::event_key() == FL_Down ){
-				z_key = -1;
-				return 1;
-			}
-			*/
-			return Fl_Gl_Window::handle(event);
+			return 1;
+		case FL_KEYUP:
+			k_down = false;
+			x_k_move = 0;
+			y_k_move = 0;
+			return 1;
+		// case FL_KEYBOARD:
+		// 	if ( Fl::event_key() == FL_Up )	{
+		// 		z_key = 1;
+		// 		return Fl_Gl_Window::handle(event);
+		// 	}
+		// 	if ( Fl::event_key() == FL_Down ){
+		// 		z_key = -1;
+		// 		return Fl_Gl_Window::handle(event);
+		// 	}
+		// 	return Fl_Gl_Window::handle(event);
 		case FL_FOCUS:
 		case FL_UNFOCUS:
 			return 1;

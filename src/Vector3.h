@@ -34,9 +34,15 @@ class Vec3 {
 
         float& operator[](int);
 
+        friend ostream& operator<<(ostream&, const Vec3&);
         friend float dotProduct(const Vec3&, const Vec3&);
         friend Vec3 crossProduct(const Vec3&, const Vec3&);
+
         void norm(void);
+
+        float x() const;
+        float y() const;
+        float z() const;
 
         static int X;
         static int Y;

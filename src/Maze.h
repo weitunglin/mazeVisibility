@@ -23,6 +23,9 @@
 #include <FL/math.h> // Use FLTK's math header because it defines M_PI
 #include <FL/gl.h>
 #include "Cell.h"
+#include "LineSeg.h"
+#include "Matrices.h"
+using namespace std;
 
 //************************************************************************
 //
@@ -98,9 +101,14 @@ class Maze {
 
 		// Draws the first-person view of the maze. It is passed the focal distance.
 		// THIS IS THE FUINCTION YOU SHOULD MODIFY.
-		void	Draw_View(const float);
+		void	Draw_View(const float, float*, float*);
 
-		void Draw_Wall(const float[2], const float[2], const float[3]);
+		void Draw_Wall(const float[2], const float[2], const float[3], float*, float*);
+
+		void Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matrix, LineSeg&, LineSeg&);
+
+		void Clip(Vector4& start, Vector4& end, Vector4& border);
+		int getCode(const Vector4& v) const;
 
 		// Save the maze to a file of the given name.
 		bool	Save(const char*);
@@ -135,6 +143,22 @@ class Maze {
 		float	min_yp;	// The minimum y location of any vertex in the maze.
 		float	max_xp;	// The maximum x location of any vertex in the maze.
 		float	max_yp;	// The maximum y location of any vertex in the maze.
+
+		// Defining region codes 
+		const int INSIDE = 0; // 000000 
+		const int TOP = 1; // 000001 
+		const int BOTTOM = 2; // 000010 
+		const int RIGHT = 4; // 000100 
+		const int LEFT = 8; // 001000 
+		const int BEHIND = 16; // 010000
+		const int FRONT = 32; // 100000
+
+		const int x_max = 1;
+		const int x_min = -1;
+		const int y_max = 1;
+		const int y_min = -1;
+		const int z_max = 0;
+		const int z_min = -1;
 
 	public:
 		static const char	X; // Used to index into the viewer's position
