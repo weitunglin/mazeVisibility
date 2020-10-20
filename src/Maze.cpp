@@ -678,13 +678,18 @@ Draw_View(const float focal_dist, float* projection_matrix, float* modelview_mat
 	// The rest is up to you!
 	//###################################################################
 	
-	Find_View_Cell(Maze::view_cell);
 	// cout << "start" << endl;
-	Draw_Cell(view_cell, projection_matrix, modelview_matrix, leftFru, rightFru);
+	for (int i = 0; i < num_cells; ++i) {
+		cells[i]->visited = false;
+	}
+	Find_View_Cell(Maze::view_cell);
+	Draw_Cell(Maze::view_cell, projection_matrix, modelview_matrix, leftFru, rightFru);
 	// cout << "end" << endl;
 }
 
 void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matrix, LineSeg& leftFru, LineSeg& rightFru) {
+	cout << "draw cell\n";
+	cell->visited = true;
 	for (int i = 0; i < 4; ++i) {
 		if (cell->edges[i]->opaque) {
 			float edge_start[2] = {
@@ -772,7 +777,9 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 		} else {
 			Cell* next = cell->edges[i]->Neighbor(cell);
 			if (next == NULL) continue;
-			Draw_Cell(next, projection_matrix, modelview_matrix, leftFru, rightFru);
+			if (!next->visited) {
+				Draw_Cell(next, projection_matrix, modelview_matrix, leftFru, rightFru);
+			}
 		}
 	}
 }
