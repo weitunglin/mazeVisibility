@@ -105,7 +105,7 @@ class Maze {
 
 		void Draw_Wall(const float[2], const float[2], const float[3], float*, float*);
 
-		void Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matrix, LineSeg&, LineSeg&);
+		void Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matrix, LineSeg, LineSeg);
 
 		void Clip(Vector4& start, Vector4& end, Vector4& border);
 		int getCode(const Vector4& v) const;
@@ -116,6 +116,11 @@ class Maze {
 		// Functions to convert between degrees and radians.
 		static double   To_Radians(double deg) { return deg / 180.0 * M_PI; };
 		static double   To_Degrees(double rad) { return rad * 180.0 / M_PI; };
+		static void 	normRadians(double& rad) {
+			if (rad < 0.0) rad += 2 * M_PI;
+			while (rad >= 2 * M_PI) rad -= 2 * M_PI;
+		};
+
 	private:
 		// Functions used when creating or loading a maze.
 
@@ -159,6 +164,8 @@ class Maze {
 		const int y_min = -1;
 		const int z_max = 0;
 		const int z_min = -1;
+
+		int max; // max of (max_z, max_y)
 
 	public:
 		static const char	X; // Used to index into the viewer's position

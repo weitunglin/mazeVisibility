@@ -30,6 +30,8 @@ class LineSeg {
 		// start and end points as the edge.
 		LineSeg(Edge*);
 
+		LineSeg(const LineSeg&);
+
 	public:
 		// Return the parameter value at which this segment crosses the given
 		// segment. This will return parameter values outside the range 0,1

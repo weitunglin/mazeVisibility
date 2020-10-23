@@ -46,6 +46,12 @@ LineSeg(float xs, float ys, float xe, float ye)
 	end[1] = ye;
 }
 
+LineSeg::LineSeg(const LineSeg& r) {
+    start[0] = r.start[0];
+	start[1] = r.start[1];
+	end[0] = r.end[0];
+	end[1] = r.end[1];
+}
 
 //**********************************************************************
 //
