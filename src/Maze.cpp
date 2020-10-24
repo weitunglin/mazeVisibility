@@ -25,8 +25,6 @@
 #include <FL/Fl.h>
 #include <FL/fl_draw.h>
 
-#define _DEBUG 1
-
 const char Maze::X = 0;
 const char Maze::Y = 1;
 const char Maze::Z = 2;
@@ -715,7 +713,6 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 					rightFruEdgeIntersect[1] = edge_end[1];
 				}
 			}
-
 #ifdef _DEBUG
 			cout << "---\n";
 			cout << "start edge " << edge_start[0] << " , " << edge_start[1] << endl;			
@@ -731,9 +728,7 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 			cout << "---\n";
 #endif
 
-			cout << leftAngle - rightAngle << ", " << abs(leftAngle - rightAngle) << ", " << (int)(abs(leftAngle - rightAngle) <= __DBL_EPSILON__) << endl;
 			if (abs(leftAngle - rightAngle) <= __DBL_EPSILON__) {
-				cout << "too close" << endl;
 				continue;
 			}
 
@@ -828,9 +823,7 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 				cout << "Edges InFru " << startInFru << " " << endInFru << endl;
 				cout << "---\n";
 #endif
-				cout << leftAngle - rightAngle << ", " << abs(leftAngle - rightAngle) << ", " << (int)(abs(leftAngle - rightAngle) <= __DBL_EPSILON__) << endl;
 				if (abs(leftAngle - rightAngle) <= __DBL_EPSILON__) {
-					cout << "too close" << endl;
 					continue;
 				}
 
@@ -857,7 +850,6 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 					}
 				}
 				if (startInFru && endInFru) {
-					// d
 					if (leftAngle > rightAngle) {
 						if (startAngle > endAngle) {
 							newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
@@ -872,8 +864,6 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 						}
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
 					} else {
-						// int dLeftStart = abs(leftAngle - startAngle), dLeftEnd = abs(leftAngle - endAngle);
-						// dLeftStart < dLeftEnd
 						if (startAngle <= leftAngle) {
 							newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
 							newLeftFru.end[1] = viewer_posn[Y] + 2 * max * (sin((startAngle)));
@@ -893,13 +883,11 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
 					}
 					if (startInFru) {
-						// d
 						newRightFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
 						newRightFru.end[1] = viewer_posn[Y] + 2 * max * (sin((startAngle)));
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
 					}
 					else if (endInFru) {
-						// d
 						newRightFru.end[0] = viewer_posn[X] + 2 * max * (cos((endAngle)));
 						newRightFru.end[1] = viewer_posn[Y] + 2 * max * (sin((endAngle)));
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
@@ -909,19 +897,16 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 					if (startInFru && endInFru) {
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
 					} else if (startInFru) {
-						// d
 						newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
 						newLeftFru.end[1] = viewer_posn[Y] + 2 * max * (sin((startAngle)));
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
 					} else if (endInFru) {
-						// d
 						newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((endAngle)));
 						newLeftFru.end[1] = viewer_posn[Y] + 2 * max * (sin((endAngle)));
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
 					}
 				}
 				if (!leftFruInEdge && !rightFruInEdge && (startInFru || endInFru)) {
-					// d
 					if (leftAngle > rightAngle) {
 						if (startAngle > endAngle) {
 							newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
@@ -984,7 +969,9 @@ Draw_Wall(const double start[2], const double end[2], const float color[3], floa
 	v3 /= v3.w;
 	v4 /= v4.w;
 
-	// cout << v1 << v2 << v3 << v4 << endl;
+#ifdef _DEBUG
+	cout << v1 << v2 << v3 << v4 << endl;
+#endif
 
 	glBegin(GL_POLYGON);
 	glColor3fv(color);
@@ -992,18 +979,6 @@ Draw_Wall(const double start[2], const double end[2], const float color[3], floa
 	glVertex2d(v2.x, v2.y);
 	glVertex2d(v3.x, v3.y);
 	glVertex2d(v4.x, v4.y);
-	// glVertex3f(v1.x, v1.y, v1.z);
-	// glVertex3f(v2.x, v2.y, v2.z);
-	// glVertex3f(v3.x, v3.y, v3.z);
-	// glVertex3f(v4.x, v4.y, v4.z);
-	// glVertex4f(v1.x, v1.y, v1.z, v1.w);
-	// glVertex4f(v2.x, v2.y, v2.z, v2.w);
-	// glVertex4f(v3.x, v3.y, v3.z, v3.w);
-	// glVertex4f(v4.x, v4.y, v4.z, v4.w);
-	// glVertex3f(edge0[X], 1.0f, edge0[Z]);
-	// glVertex3f(edge1[X], 1.0f, edge1[Z]);
-	// glVertex3f(edge1[X], -1.0f, edge1[Z]);
-	// glVertex3f(edge0[X], -1.0f, edge0[Z]);
 	glEnd();
 }
 

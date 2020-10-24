@@ -72,7 +72,7 @@ draw(void)
 	if ( ! valid() ) {
 		// The OpenGL context may have been changed
 		// Set up the viewport to fill the window.
-		glViewport(0, 0, 2*w(), 2*h());
+		glViewport(0, 0, w(), h());
 
 		// We are using orthogonal viewing for 2D. This puts 0,0 in the
 		// middle of the screen, and makes the image size in view space
@@ -127,58 +127,16 @@ draw(void)
 		// plus the focal length.
 		glClear(GL_DEPTH_BUFFER_BIT);
 
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
 		float aspect_ratio = (float)w() / h();
-		// gluPerspective(maze->viewer_fov, aspect_ratio, 0.01, 200);
-		// float projection_matrix[16];
-		// glGetFloatv(GL_PROJECTION_MATRIX, projection_matrix);
-
-        // --- viewer fovy ---
-		// 45
-		// --- projection matrix ---
-		// 2.41421 0 0 0 
-		// 0 2.41421 0 0 
-		// 0 0 -1.0001 -1 
-		// 0 0 -0.020001 0 
-		// -- view position ---
-		// 2,2,0
-		// --- model matrix ---
-		// -0.5 0 -0.866025 0
-		// 0 1 -0 0
-		// 0.866025 -0 -0.5 0
-		// -0.732051 0 2.73205 1 
 
 		float projection_matrix[16];
 		float z_near = 0.01, z_far = 200;
 		ComputeProjectionMatrix(projection_matrix, maze->viewer_fov, aspect_ratio, z_near, z_far);
-		// glLoadMatrixf(projection_matrix);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		// glMultMatrixd(projection_matrix);
 
-		// cout << "--- viewer fovy ---" << endl;
-		// cout << maze->viewer_fov << endl;
-		// cout << "--- projection matrix ---" << endl;
-		// for (int i = 0; i < 4; i++) {
-		// 	for (int j = 0; j < 4; j++) {
-		// 		cout << projection_matrix[i * 4 + j] << " ";
-		// 	}
-		// 	cout << endl;
-		// }
-
-		// cout << "-- view position ---" << endl;
-		// cout << maze->viewer_posn[Maze::X] << "," << maze->viewer_posn[Maze::Y] << "," << maze->viewer_posn[Maze::Z] << endl;
-		
 		float viewer_pos[3] = { maze->viewer_posn[Maze::Y], 0.0f, maze->viewer_posn[Maze::X] };
-		// gluLookAt(viewer_pos[Maze::X], viewer_pos[Maze::Y], viewer_pos[Maze::Z],
-		// 	viewer_pos[Maze::X] + sin(Maze::To_Radians(maze->viewer_dir)),
-		// 	viewer_pos[Maze::Y],
-		// 	viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)),
-		// 	0.0, 1.0, 0.0);
-		// float model_matrix[16];
-		// glGetFloatv(GL_MODELVIEW_MATRIX, model_matrix);
 
 		float model_matrix[16];
 		Vec3 eye(viewer_pos[Maze::X], viewer_pos[Maze::Y], viewer_pos[Maze::Z]);
@@ -186,22 +144,36 @@ draw(void)
 				viewer_pos[Maze::Y],
 				viewer_pos[Maze::Z] + cos(Maze::To_Radians(maze->viewer_dir)));
 
-		// cout << "eye: " << eye << endl;
-		// cout << "center: " << center << endl;
 		Vec3 up(0.0, 1.0, 0.0);
 		ComputeModelMatrix(model_matrix,
 			eye, //< eye
 			center, //< center
 			up); //< up
-
-		// cout << "--- model matrix ---" << endl;
-		// for (int i = 0; i < 4; i++) {
-		// 	for (int j = 0; j < 4; j++) {
-		// 		cout << model_matrix[i * 4 + j] << " ";
-		// 	}
-		// 	cout << endl;
-		// }
-		
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		// glMultMatrixd(model_matrix);
+#ifdef _DEBUG
+		cout << "--- viewer fovy ---" << endl;
+		cout << maze->viewer_fov << endl;
+		cout << "--- projection matrix ---" << endl;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				cout << projection_matrix[i * 4 + j] << " ";
+			}
+			cout << endl;
+		}
+		cout << "-- view position ---" << endl;
+		cout << maze->viewer_posn[Maze::X] << "," << maze->viewer_posn[Maze::Y] << "," << maze->viewer_posn[Maze::Z] << endl;
+		cout << "eye: " << eye << endl;
+		cout << "center: " << center << endl;
+		cout << "--- model matrix ---" << endl;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				cout << model_matrix[i * 4 + j] << " ";
+			}
+			cout << endl;
+		}
+#endif
 		maze->Draw_View(focal_length, projection_matrix, model_matrix);
 	}
 }
