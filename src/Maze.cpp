@@ -639,7 +639,7 @@ Draw_View(const float focal_dist, float* projection_matrix, float* modelview_mat
 	LineSeg rightFru(viewer_posn[X], viewer_posn[Y], viewer_posn[X] + 2 * max * (cos(To_Radians(viewer_dir - viewer_fov / 2.0))), viewer_posn[Y] + 2 * max * (sin(To_Radians(viewer_dir - viewer_fov / 2.0))));
 
 #ifdef _DEBUG
-	cout << "\n*** start\n";
+	cout << "\n*** start **********************************************\n";
 #endif
 
 	for (int i = 0; i < num_cells; ++i) {
@@ -658,17 +658,17 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 		cout << i << " " << cell->edges[i]->index << endl;
 		cout << endl;
 #endif
-		float edge_start[2] = {
+		double edge_start[2] = {
 			cell->edges[i]->endpoints[Edge::START]->posn[Vertex::X],
 			cell->edges[i]->endpoints[Edge::START]->posn[Vertex::Y]
 		};
-		float edge_end[2] = {
+		double edge_end[2] = {
 			cell->edges[i]->endpoints[Edge::END]->posn[Vertex::X],
 			cell->edges[i]->endpoints[Edge::END]->posn[Vertex::Y]
 		};
 		if (cell->edges[i]->opaque) {
 			LineSeg edge(cell->edges[i]);
-			float leftFruEdgeIntersect[2] = { 0.0 }, rightFruEdgeIntersect[2] = { 0.0 };
+			double leftFruEdgeIntersect[2] = { 0.0 }, rightFruEdgeIntersect[2] = { 0.0 };
 	
 			bool leftFruInEdge = LineSeg::get_line_intersection(leftFru.start[0], leftFru.start[1], leftFru.end[0], leftFru.end[1],
 				edge_start[0], edge_start[1], edge_end[0], edge_end[1], &leftFruEdgeIntersect[0], &leftFruEdgeIntersect[1]);
@@ -680,17 +680,39 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 			// else if both arenot inside frustim, set them with intersections
 			double startAngle = (atan2(edge_start[1] - viewer_posn[Y], edge_start[0] - viewer_posn[X]));
 			double endAngle = (atan2(edge_end[1] - viewer_posn[Y], edge_end[0] - viewer_posn[X]));
-			double leftAngle = To_Radians(viewer_dir + viewer_fov / 2.0), rightAngle = To_Radians(viewer_dir - viewer_fov / 2.0);
+			double leftAngle = atan2(leftFru.end[1] - leftFru.start[1], leftFru.end[0] - leftFru.start[0]), rightAngle = atan2(rightFru.end[1] - rightFru.start[1], rightFru.end[0] - rightFru.start[0]);
 			normRadians(startAngle); normRadians(endAngle); normRadians(leftAngle); normRadians(rightAngle);
 
 			bool startInFru = (leftAngle > rightAngle) ? (rightAngle <= startAngle && startAngle <= leftAngle) : (rightAngle <= startAngle || startAngle <= leftAngle);
 			bool endInFru = (leftAngle > rightAngle) ? (rightAngle <= endAngle && endAngle <= leftAngle) : (rightAngle <= endAngle || endAngle <= leftAngle);
+			
+			if (!leftFruInEdge) {
+				if (abs(startAngle - leftAngle) <= 2 * __LDBL_EPSILON__) {
+					leftFruInEdge = true;
+					startInFru = false;
+					leftFruEdgeIntersect[0] = edge_start[0];
+					leftFruEdgeIntersect[1] = edge_start[1];
+				}
+				if (abs(endAngle - leftAngle) <= 2 * __LDBL_EPSILON__) {
+					leftFruInEdge = true;
+					endInFru = false;
+					leftFruEdgeIntersect[0] = edge_end[0];
+					leftFruEdgeIntersect[1] = edge_end[1];
+				}
+			}
 
-			if (!leftFruInEdge && !rightFruInEdge) {
-				if (startInFru && endInFru) {
-					Draw_Wall(edge_start, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
-				} else {
-					continue;
+			if (!rightFruInEdge) {
+				if (abs(startAngle - rightAngle) <= 2 * __LDBL_EPSILON__) {
+					rightFruInEdge = true;
+					startInFru = false;
+					rightFruEdgeIntersect[0] = edge_start[0];
+					rightFruEdgeIntersect[1] = edge_start[1];
+				}
+				if (abs(endAngle - rightAngle) <= 2 * __LDBL_EPSILON__) {
+					rightFruInEdge = true;
+					endInFru = false;
+					rightFruEdgeIntersect[0] = edge_end[0];
+					rightFruEdgeIntersect[1] = edge_end[1];
 				}
 			}
 
@@ -709,9 +731,24 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 			cout << "---\n";
 #endif
 
+			cout << leftAngle - rightAngle << ", " << abs(leftAngle - rightAngle) << ", " << (int)(abs(leftAngle - rightAngle) <= __DBL_EPSILON__) << endl;
+			if (abs(leftAngle - rightAngle) <= __DBL_EPSILON__) {
+				cout << "too close" << endl;
+				continue;
+			}
+
+			if (!leftFruInEdge && !rightFruInEdge) {
+				if (startInFru && endInFru) {
+					Draw_Wall(edge_start, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
+				} else {
+					continue;
+				}
+			}
+
 			if (leftFruInEdge && rightFruInEdge) {
 				Draw_Wall(leftFruEdgeIntersect, rightFruEdgeIntersect, cell->edges[i]->color, projection_matrix, modelview_matrix);
 			}
+
 			if (leftFruInEdge && !rightFruInEdge) {
 				if (startInFru && endInFru) {
 					Draw_Wall(edge_start, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
@@ -721,6 +758,7 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 					Draw_Wall(leftFruEdgeIntersect, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
 				}
 			}
+
 			if (!leftFruInEdge && rightFruInEdge) {
 				if (startInFru && endInFru) {
 					Draw_Wall(edge_start, edge_end, cell->edges[i]->color, projection_matrix, modelview_matrix);
@@ -734,33 +772,67 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 			Cell* next = cell->edges[i]->Neighbor(cell);
 			if (next == NULL) continue;
 			if (!next->visited) {
-				float leftFruEdgeIntersect[2] = { 0.0 }, rightFruEdgeIntersect[2] = { 0.0 };
+				double leftFruEdgeIntersect[2] = { 0.0 }, rightFruEdgeIntersect[2] = { 0.0 };
 	
 				bool leftFruInEdge = LineSeg::get_line_intersection(leftFru.start[0], leftFru.start[1], leftFru.end[0], leftFru.end[1], edge_start[0], edge_start[1], edge_end[0], edge_end[1], &leftFruEdgeIntersect[0], &leftFruEdgeIntersect[1]);
 				bool rightFruInEdge = LineSeg::get_line_intersection(rightFru.start[0], rightFru.start[1], rightFru.end[0], rightFru.end[1], edge_start[0], edge_start[1], edge_end[0], edge_end[1], &rightFruEdgeIntersect[0], &rightFruEdgeIntersect[1]);
 
 				double startAngle = (atan2(edge_start[1] - viewer_posn[Y], edge_start[0] - viewer_posn[X]));
 				double endAngle = (atan2(edge_end[1] - viewer_posn[Y], edge_end[0] - viewer_posn[X]));
-				double leftAngle = To_Radians(viewer_dir + viewer_fov / 2.0), rightAngle = To_Radians(viewer_dir - viewer_fov / 2.0);
+				double leftAngle = atan2(leftFru.end[1] - leftFru.start[1], leftFru.end[0] - leftFru.start[0]), rightAngle = atan2(rightFru.end[1] - rightFru.start[1], rightFru.end[0] - rightFru.start[0]);
 				normRadians(startAngle); normRadians(endAngle); normRadians(leftAngle); normRadians(rightAngle);
 
 				bool startInFru = (leftAngle > rightAngle) ? (rightAngle <= startAngle && startAngle <= leftAngle) : (rightAngle <= startAngle || startAngle <= leftAngle);
 				bool endInFru = (leftAngle > rightAngle) ? (rightAngle <= endAngle && endAngle <= leftAngle) : (rightAngle <= endAngle || endAngle <= leftAngle);
+				if (!leftFruInEdge) {
+					if (abs(startAngle - leftAngle) <= 2 * __LDBL_EPSILON__) {
+						leftFruInEdge = true;
+						startInFru = false;
+						leftFruEdgeIntersect[0] = edge_start[0];
+						leftFruEdgeIntersect[1] = edge_start[1];
+					}
+					if (abs(endAngle - leftAngle) <= 2 * __LDBL_EPSILON__) {
+						leftFruInEdge = true;
+						endInFru = false;
+						leftFruEdgeIntersect[0] = edge_end[0];
+						leftFruEdgeIntersect[1] = edge_end[1];
+					}
+				}
+
+				if (!rightFruInEdge) {
+					if (abs(startAngle - rightAngle) <= 2 * __LDBL_EPSILON__) {
+						rightFruInEdge = true;
+						startInFru = false;
+						rightFruEdgeIntersect[0] = edge_start[0];
+						rightFruEdgeIntersect[1] = edge_start[1];
+					}
+					if (abs(endAngle - rightAngle) <= 2 * __LDBL_EPSILON__) {
+						rightFruInEdge = true;
+						endInFru = false;
+						rightFruEdgeIntersect[0] = edge_end[0];
+						rightFruEdgeIntersect[1] = edge_end[1];
+					}
+				}
 
 #ifdef _DEBUG
-			cout << "---\n";
-			cout << "start edge " << edge_start[0] << " , " << edge_start[1] << endl;			
-			cout << "end edge " << edge_end[0] << " , " << edge_end[1] << endl;
-			cout << "left fru " << "(" << leftFru.start[0] << "," << leftFru.start[1] << ") (" << leftFru.end[0] << "," << leftFru.end[1] << ")" << endl;
-			cout << "right fru " << "(" << rightFru.start[0] << "," << rightFru.start[1] << ") (" << rightFru.end[0] << "," << rightFru.end[1] << ")" << endl;
-			cout << "FruInEdge " << leftFruInEdge << " , " << rightFruInEdge << endl;
-			cout << "left Intersects " << leftFruEdgeIntersect[0] << " , " << leftFruEdgeIntersect[1] << endl;
-			cout << "right Intersects " << rightFruEdgeIntersect[0] << " , " << rightFruEdgeIntersect[1] << endl;
-			cout << "Start & End angles " <<  startAngle << " " << endAngle << endl;
-			cout << "Left & Right angles " << leftAngle << " " << rightAngle << endl;
-			cout << "Edges InFru " << startInFru << " " << endInFru << endl;
-			cout << "---\n";
+				cout << "---\n";
+				cout << "start edge " << edge_start[0] << " , " << edge_start[1] << endl;			
+				cout << "end edge " << edge_end[0] << " , " << edge_end[1] << endl;
+				cout << "left fru " << "(" << leftFru.start[0] << "," << leftFru.start[1] << ") (" << leftFru.end[0] << "," << leftFru.end[1] << ")" << endl;
+				cout << "right fru " << "(" << rightFru.start[0] << "," << rightFru.start[1] << ") (" << rightFru.end[0] << "," << rightFru.end[1] << ")" << endl;
+				cout << "FruInEdge " << leftFruInEdge << " , " << rightFruInEdge << endl;
+				cout << "left Intersects " << leftFruEdgeIntersect[0] << " , " << leftFruEdgeIntersect[1] << endl;
+				cout << "right Intersects " << rightFruEdgeIntersect[0] << " , " << rightFruEdgeIntersect[1] << endl;
+				cout << "Start & End angles " <<  startAngle << " " << endAngle << endl;
+				cout << "Left & Right angles " << leftAngle << " " << rightAngle << endl;
+				cout << "Edges InFru " << startInFru << " " << endInFru << endl;
+				cout << "---\n";
 #endif
+				cout << leftAngle - rightAngle << ", " << abs(leftAngle - rightAngle) << ", " << (int)(abs(leftAngle - rightAngle) <= __DBL_EPSILON__) << endl;
+				if (abs(leftAngle - rightAngle) <= __DBL_EPSILON__) {
+					cout << "too close" << endl;
+					continue;
+				}
 
 				LineSeg newLeftFru(leftFru), newRightFru(rightFru);
 				if (leftFruInEdge && rightFruInEdge) {
@@ -784,37 +856,6 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
 					}
 				}
-
-				if (leftFruInEdge && !rightFruInEdge) {
-					if (startInFru) {
-						// d
-						newRightFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
-						newRightFru.end[1] = viewer_posn[Y] + 2 * max * (sin((startAngle)));
-						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
-					}
-					else if (endInFru) {
-						// d
-						newRightFru.end[0] = viewer_posn[X] + 2 * max * (cos((endAngle)));
-						newRightFru.end[1] = viewer_posn[Y] + 2 * max * (sin((endAngle)));
-						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
-					}
-				}
-
-				if (!leftFruInEdge && rightFruInEdge) {
-					if (startInFru) {
-						// d
-						newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
-						newLeftFru.end[1] = viewer_posn[Y] + 2 * max * (sin((startAngle)));
-						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
-					}
-					else if (endInFru) {
-						// d
-						newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((endAngle)));
-						newLeftFru.end[1] = viewer_posn[Y] + 2 * max * (sin((endAngle)));
-						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
-					}
-				}
-
 				if (startInFru && endInFru) {
 					// d
 					if (leftAngle > rightAngle) {
@@ -831,8 +872,9 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 						}
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
 					} else {
-						int dLeftStart = abs(leftAngle - startAngle), dLeftEnd = abs(leftAngle - endAngle);
-						if (dLeftStart < dLeftEnd) {
+						// int dLeftStart = abs(leftAngle - startAngle), dLeftEnd = abs(leftAngle - endAngle);
+						// dLeftStart < dLeftEnd
+						if (startAngle <= leftAngle) {
 							newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
 							newLeftFru.end[1] = viewer_posn[Y] + 2 * max * (sin((startAngle)));
 							newRightFru.end[0] = viewer_posn[X] + 2 * max * (cos((endAngle)));
@@ -846,7 +888,38 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
 					}
 				}
-
+				if (leftFruInEdge && !rightFruInEdge) {
+					if (startInFru && endInFru) {
+						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
+					}
+					if (startInFru) {
+						// d
+						newRightFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
+						newRightFru.end[1] = viewer_posn[Y] + 2 * max * (sin((startAngle)));
+						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
+					}
+					else if (endInFru) {
+						// d
+						newRightFru.end[0] = viewer_posn[X] + 2 * max * (cos((endAngle)));
+						newRightFru.end[1] = viewer_posn[Y] + 2 * max * (sin((endAngle)));
+						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
+					}
+				}
+				if (!leftFruInEdge && rightFruInEdge) {
+					if (startInFru && endInFru) {
+						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
+					} else if (startInFru) {
+						// d
+						newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((startAngle)));
+						newLeftFru.end[1] = viewer_posn[Y] + 2 * max * (sin((startAngle)));
+						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
+					} else if (endInFru) {
+						// d
+						newLeftFru.end[0] = viewer_posn[X] + 2 * max * (cos((endAngle)));
+						newLeftFru.end[1] = viewer_posn[Y] + 2 * max * (sin((endAngle)));
+						Draw_Cell(next, projection_matrix, modelview_matrix, newLeftFru, newRightFru);
+					}
+				}
 				if (!leftFruInEdge && !rightFruInEdge && (startInFru || endInFru)) {
 					// d
 					if (leftAngle > rightAngle) {
@@ -884,9 +957,9 @@ void Maze::Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matr
 }
 
 void Maze::
-Draw_Wall(const float start[2], const float end[2], const float color[3], float* projection_matrix, float* modelview_matrix) {
-	float edge0[3] = { start[Y], 0.0f, start[X] };
-	float edge1[3] = { end[Y], 0.0f, end[X] };
+Draw_Wall(const double start[2], const double end[2], const float color[3], float* projection_matrix, float* modelview_matrix) {
+	double edge0[3] = { start[Y], 0.0f, start[X] };
+	double edge1[3] = { end[Y], 0.0f, end[X] };
 
 	Matrix4 p(projection_matrix);
 	Matrix4 m(modelview_matrix);
@@ -915,10 +988,10 @@ Draw_Wall(const float start[2], const float end[2], const float color[3], float*
 
 	glBegin(GL_POLYGON);
 	glColor3fv(color);
-	glVertex2f(v1.x, v1.y);
-	glVertex2f(v2.x, v2.y);
-	glVertex2f(v3.x, v3.y);
-	glVertex2f(v4.x, v4.y);
+	glVertex2d(v1.x, v1.y);
+	glVertex2d(v2.x, v2.y);
+	glVertex2d(v3.x, v3.y);
+	glVertex2d(v4.x, v4.y);
 	// glVertex3f(v1.x, v1.y, v1.z);
 	// glVertex3f(v2.x, v2.y, v2.z);
 	// glVertex3f(v3.x, v3.y, v3.z);

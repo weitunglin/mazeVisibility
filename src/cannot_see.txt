@@ -1,0 +1,280 @@
+*** start **********************************************
+edge information
+0
+0 13
+
+---
+start edge 5 , 0
+end edge 5 , 5
+left fru (2.5,2.5) (29.6892,15.1785)
+right fru (2.5,2.5) (29.6892,-10.1785)
+FruInEdge 1 , 1
+left Intersects 5 , 3.66577
+right Intersects 5 , 1.33423
+Start & End angles 5.49779 0.785398
+Left & Right angles 0.436332 5.84685
+Edges InFru 0 0
+---
+-5.41052, 5.41052, 0
+edge information
+1
+0 14
+
+---
+start edge 10 , 0
+end edge 10 , 5
+left fru (2.5,2.5) (29.6892,15.1785)
+right fru (2.5,2.5) (29.6892,-10.1785)
+FruInEdge 0 , 0
+left Intersects 0 , 0
+right Intersects 0 , 0
+Start & End angles 5.96143 0.321751
+Left & Right angles 0.436332 5.84685
+Edges InFru 1 1
+---
+-5.41052, 5.41052, 0
+edge information
+2
+0 15
+
+---
+start edge 15 , 0
+end edge 15 , 5
+left fru (2.5,2.5) (30.9605,-6.98683)
+right fru (2.5,2.5) (30.9605,11.9868)
+FruInEdge 0 , 0
+left Intersects 0 , 0
+right Intersects 0 , 0
+Start & End angles 6.08579 0.197396
+Left & Right angles 5.96143 0.321751
+Edges InFru 0 0
+---
+5.63968, 5.63968, 0
+edge information
+2
+1 5
+
+---
+start edge 10 , 5
+end edge 15 , 5
+left fru (2.5,2.5) (30.9605,-6.98683)
+right fru (2.5,2.5) (30.9605,11.9868)
+FruInEdge 0 , 1
+left Intersects 0 , 0
+right Intersects 10 , 5
+Start & End angles 0.321751 0.197396
+Left & Right angles 5.96143 0.321751
+Edges InFru 1 0
+---
+5.63968, 5.63968, 0
+edge information
+5
+0 19
+
+---
+start edge 15 , 5
+end edge 15 , 10
+left fru (2.5,2.5) (30.9605,11.9868)
+right fru (2.5,2.5) (30.9605,11.9868)
+FruInEdge 1 , 1
+left Intersects 15 , 6.66667
+right Intersects 15 , 6.66667
+Start & End angles 0.197396 0.54042
+Left & Right angles 0.321751 0.321751
+Edges InFru 1 1
+---
+0, 0, 1
+too close
+edge information
+5
+1 8
+
+---
+start edge 10 , 10
+end edge 15 , 10
+left fru (2.5,2.5) (30.9605,11.9868)
+right fru (2.5,2.5) (30.9605,11.9868)
+FruInEdge 0 , 0
+left Intersects 0 , 0
+right Intersects 0 , 0
+Start & End angles 0.785398 0.54042
+Left & Right angles 0.321751 0.321751
+Edges InFru 1 1
+---
+0, 0, 1
+too close
+edge information
+5
+2 18
+
+---
+start edge 10 , 5
+end edge 10 , 10
+left fru (2.5,2.5) (30.9605,11.9868)
+right fru (2.5,2.5) (30.9605,11.9868)
+FruInEdge 1 , 1
+left Intersects 10 , 5
+right Intersects 10 , 5
+Start & End angles 0.321751 0.785398
+Left & Right angles 0.321751 0.321751
+Edges InFru 1 1
+---
+0, 0, 1
+too close
+edge information
+5
+3 5
+
+edge information
+2
+2 14
+
+edge information
+2
+3 2
+
+---
+start edge 10 , 0
+end edge 15 , 0
+left fru (2.5,2.5) (30.9605,-6.98683)
+right fru (2.5,2.5) (30.9605,11.9868)
+FruInEdge 1 , 0
+left Intersects 10 , 0
+right Intersects 0 , 0
+Start & End angles 5.96143 6.08579
+Left & Right angles 5.96143 0.321751
+Edges InFru 0 0
+---
+5.63968, 5.63968, 0
+edge information
+2
+0 15
+
+---
+start edge 15 , 0
+end edge 15 , 5
+left fru (2.5,2.5) (30.9605,11.9868)
+right fru (2.5,2.5) (30.9605,-6.98683)
+FruInEdge 0 , 0
+left Intersects 0 , 0
+right Intersects 0 , 0
+Start & End angles 6.08579 0.197396
+Left & Right angles 0.321751 5.96143
+Edges InFru 1 1
+---
+-5.63968, 5.63968, 0
+edge information
+2
+1 5
+
+edge information
+2
+2 14
+
+edge information
+2
+3 2
+
+---
+start edge 10 , 0
+end edge 15 , 0
+left fru (2.5,2.5) (30.9605,11.9868)
+right fru (2.5,2.5) (30.9605,-6.98683)
+FruInEdge 0 , 1
+left Intersects 0 , 0
+right Intersects 10 , 0
+Start & End angles 5.96143 6.08579
+Left & Right angles 0.321751 5.96143
+Edges InFru 0 1
+---
+-5.63968, 5.63968, 0
+edge information
+1
+1 4
+
+---
+start edge 5 , 5
+end edge 10 , 5
+left fru (2.5,2.5) (29.6892,15.1785)
+right fru (2.5,2.5) (29.6892,-10.1785)
+FruInEdge 1 , 0
+left Intersects 7.86127 , 5
+right Intersects 0 , 0
+Start & End angles 0.785398 0.321751
+Left & Right angles 0.436332 5.84685
+Edges InFru 0 1
+---
+-5.41052, 5.41052, 0
+edge information
+1
+2 13
+
+edge information
+1
+3 1
+
+---
+start edge 5 , 0
+end edge 10 , 0
+left fru (2.5,2.5) (29.6892,15.1785)
+right fru (2.5,2.5) (29.6892,-10.1785)
+FruInEdge 0 , 1
+left Intersects 0 , 0
+right Intersects 7.86127 , 0
+Start & End angles 5.49779 5.96143
+Left & Right angles 0.436332 5.84685
+Edges InFru 0 1
+---
+-5.41052, 5.41052, 0
+edge information
+0
+1 3
+
+---
+start edge 0 , 5
+end edge 5 , 5
+left fru (2.5,2.5) (29.6892,15.1785)
+right fru (2.5,2.5) (29.6892,-10.1785)
+FruInEdge 0 , 0
+left Intersects 0 , 0
+right Intersects 0 , 0
+Start & End angles 2.35619 0.785398
+Left & Right angles 0.436332 5.84685
+Edges InFru 0 0
+---
+-5.41052, 5.41052, 0
+edge information
+0
+2 12
+
+---
+start edge 0 , 0
+end edge 0 , 5
+left fru (2.5,2.5) (29.6892,15.1785)
+right fru (2.5,2.5) (29.6892,-10.1785)
+FruInEdge 0 , 0
+left Intersects 0 , 0
+right Intersects 0 , 0
+Start & End angles 3.92699 2.35619
+Left & Right angles 0.436332 5.84685
+Edges InFru 0 0
+---
+-5.41052, 5.41052, 0
+edge information
+0
+3 0
+
+---
+start edge 0 , 0
+end edge 5 , 0
+left fru (2.5,2.5) (29.6892,15.1785)
+right fru (2.5,2.5) (29.6892,-10.1785)
+FruInEdge 0 , 0
+left Intersects 0 , 0
+right Intersects 0 , 0
+Start & End angles 3.92699 5.49779
+Left & Right angles 0.436332 5.84685
+Edges InFru 0 0
+---
+-5.41052, 5.41052, 0
+

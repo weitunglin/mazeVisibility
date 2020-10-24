@@ -103,7 +103,7 @@ class Maze {
 		// THIS IS THE FUINCTION YOU SHOULD MODIFY.
 		void	Draw_View(const float, float*, float*);
 
-		void Draw_Wall(const float[2], const float[2], const float[3], float*, float*);
+		void Draw_Wall(const double[2], const double[2], const float[3], float*, float*);
 
 		void Draw_Cell(Cell* cell, float* projection_matrix, float* modelview_matrix, LineSeg, LineSeg);
 
@@ -117,8 +117,8 @@ class Maze {
 		static double   To_Radians(double deg) { return deg / 180.0 * M_PI; };
 		static double   To_Degrees(double rad) { return rad * 180.0 / M_PI; };
 		static void 	normRadians(double& rad) {
-			if (rad < 0.0) rad += 2 * M_PI;
 			while (rad >= 2 * M_PI) rad -= 2 * M_PI;
+			while (rad < 0.0) rad += 2 * M_PI;
 		};
 
 	private:
