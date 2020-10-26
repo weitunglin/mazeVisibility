@@ -31,6 +31,7 @@ const char Maze::Z = 2;
 
 const float Maze::BUFFER = 0.1f;
 
+#define _DEBUG 1
 
 //**********************************************************************
 //
@@ -458,6 +459,10 @@ Find_View_Cell(Cell *seed_cell)
 {
 	Cell    *new_cell;
 
+	for (int i = 0; i < num_cells; ++i) {
+		cells[i]->visited = false;
+	}
+
 	// 
 	while ( ! ( seed_cell->Point_In_Cell(viewer_posn[X], viewer_posn[Y],
 													 viewer_posn[Z], new_cell) ) ) {
@@ -465,7 +470,7 @@ Find_View_Cell(Cell *seed_cell)
 			// The viewer is outside the top or bottom of the maze.
 			throw new MazeException("Maze: View not in maze\n");
 		}
-
+		cout << "while\n";
 		seed_cell = new_cell;
     }
     
@@ -640,10 +645,15 @@ Draw_View(const float focal_dist, float* projection_matrix, float* modelview_mat
 	cout << "\n*** start **********************************************\n";
 #endif
 
+	try {
+		Find_View_Cell(Maze::view_cell);
+	} catch (MazeException e) {
+		cerr << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!error" << endl;
+	}
+	
 	for (int i = 0; i < num_cells; ++i) {
 		cells[i]->visited = false;
 	}
-	Find_View_Cell(Maze::view_cell);
 	Draw_Cell(Maze::view_cell, projection_matrix, modelview_matrix, leftFru, rightFru);
 }
 

@@ -40,7 +40,7 @@ static const int    BUTTON_H = 25;
 static const int    GAP = 5;
 
 // The time per frame, in seconds (enforced only by timeouts.)
-static const float  frame_time = 0.003f;
+static const float  frame_time = 0.05;
 
 // Global variables
 static MapWidget    *map_window;  // The window with the map of the maze in it.

@@ -39,6 +39,7 @@ MazeWindow(int x, int y, int width, int height, const char *label,Maze *m)
 	down = false;
 	k_down = false;
 	z_key = 0;
+
 }
 
 
@@ -52,6 +53,7 @@ Set_Maze(Maze *m)
 {
 	// Change the maze
 	maze = m;
+	SetupTextureImages();
 
 	// Force a redraw
 	redraw();
@@ -72,7 +74,7 @@ draw(void)
 	if ( ! valid() ) {
 		// The OpenGL context may have been changed
 		// Set up the viewport to fill the window.
-		glViewport(0, 0, w(), h());
+		glViewport(0, 0, 2*w(), 2*h());
 
 		// We are using orthogonal viewing for 2D. This puts 0,0 in the
 		// middle of the screen, and makes the image size in view space
@@ -92,26 +94,37 @@ draw(void)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glBegin(GL_QUADS);
 		// Draw the "floor". It is an infinite plane perpendicular to
 		// vertical, so we know it projects to cover the entire bottom
 		// half of the screen. Walls of the maze will be drawn over the top
 		// of it.
+	glBegin(GL_QUADS);
 		glColor3f(0.2f, 0.2f, 0.2f);
 		glVertex2f(-w() * 0.5f, -h() * 0.5f);
 		glVertex2f( w() * 0.5f, -h() * 0.5f);
 		glVertex2f( w() * 0.5f, 0.0       );
 		glVertex2f(-w() * 0.5f, 0.0       );
+	// glEnd();
 
 		// Draw the ceiling. It will project to the entire top half
 		// of the window.
+	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// glEnable(GL_TEXTURE_2D);
+	// glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+	// glBindTexture(GL_TEXTURE_2D, skyID);
+	// glBegin(GL_QUADS);
 		glColor3f(0.4f, 0.4f, 0.4f);
+		// glTexCoord2f(1, 1); glVertex2f( w() * 0.5f,  h() * 0.5f);
+		// glTexCoord2f(0, 1); glVertex2f(-w() * 0.5f,  h() * 0.5f);
+		// glTexCoord2f(0, 0); glVertex2f(-w() * 0.5f, 0.0       );
+		// glTexCoord2f(1, 0); glVertex2f( w() * 0.5f, 0.0       );
 		glVertex2f( w() * 0.5f,  h() * 0.5f);
 		glVertex2f(-w() * 0.5f,  h() * 0.5f);
 		glVertex2f(-w() * 0.5f, 0.0       );
 		glVertex2f( w() * 0.5f, 0.0       );
 	glEnd();
-
+	// glFlush();
+	// glDisable(GL_TEXTURE_2D);
 
 	if ( maze ) {
 		// Set the focal length. We can do this because we know the
@@ -253,6 +266,28 @@ void MazeWindow::ComputeProjectionMatrix(float* matrix, float fovy, float aspect
 	matrix[12] = matrix[13] = matrix[15] = 0.0;
 }
 
+void MazeWindow::SetupTextureImages() {
+	if (valid()) {
+		glEnable(GL_TEXTURE_2D);
+		glGenTextures(1, &skyID);
+		glBindTexture(GL_TEXTURE_2D, skyID);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+		cout << "opening file" << endl;
+		Fl_JPEG_Image img("../images/sky.jpeg");
+		if (img.fail()) {
+			cerr << "cannot open sky image\n";
+			return;
+		}
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.w(), img.h(), 0, GL_RGBA, GL_UNSIGNED_BYTE, *img.data());
+		// glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		// glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glDisable(GL_TEXTURE_2D);
+	} else {
+		cout << "opengl invalid\n";
+	}
+}
+
 //*************************************************************************
 //
 // *
@@ -285,7 +320,7 @@ Drag(float dt)
 
 		// Set the viewer's linear motion based on a speed (derived from
 		// vertical mouse motion), the elapsed time and the viewing direction.
-		dist = 30.0f * dt * dy / (float)h();
+		dist = 10.0f * dt * dy / (float)h();
 		x_move = dist * (float)cos(Maze::To_Radians(maze->viewer_dir));
 		y_move = dist * (float)sin(Maze::To_Radians(maze->viewer_dir));
 

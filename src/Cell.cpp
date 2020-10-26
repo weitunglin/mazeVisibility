@@ -69,7 +69,11 @@ Point_In_Cell(const float x, const float y, const float z,
 		if ( edges[i]->Cell_Side(this) != edges[i]->Point_Side(x, y) ) {
 			// Found an edge that we are on the wrong side of.
 			// Return the neighboring cell, so we know where to look next.
+			
 			neighbor = edges[i]->Neighbor(this);
+			if (neighbor->visited) {
+				neighbor = 0;
+			}
 			return false;
 		}
 	}
@@ -116,7 +120,7 @@ Clip_To_Cell(float &xs, float &ys,
 	// If the nearest crossing is within the segment...
 	if ( min_crossing < 1.0 ) {
 		if ( edges[min_cross_edge]->opaque )	{
-			min_crossing -= 1.0e-3f; // Make sure we stay inside.
+			min_crossing -= 1.0e-1f; // Make sure we stay inside.
 			if ( min_crossing < 0.0 )	
 				min_crossing = 0.0f;
 			xe = xs + min_crossing * ( xe - xs );
@@ -125,7 +129,7 @@ Clip_To_Cell(float &xs, float &ys,
 		}
 		else
 		{
-			min_crossing += 1.0e-3f; // Make sure the new point is outside.
+			min_crossing += 1.0e-1f; // Make sure the new point is outside.
 			if ( min_crossing > 1.0 )
 				min_crossing = 1.0f;
 			xs = xs + min_crossing * ( xe - xs );

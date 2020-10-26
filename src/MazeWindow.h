@@ -22,6 +22,7 @@
 
 #include <Fl/Fl.h>
 #include <Fl/Fl_Gl_Window.h>
+#include <FL/Fl_JPEG_Image.h>
 #include <iostream>
 using namespace std;
 #include "Maze.h"
@@ -53,6 +54,8 @@ class MazeWindow : public Fl_Gl_Window {
 
 		void ComputeProjectionMatrix(float*, float, float, float, float);
 
+		void SetupTextureImages();
+
 	private:
 		bool	Drag(float);	// The function to call for mouse drag events
 
@@ -72,6 +75,9 @@ class MazeWindow : public Fl_Gl_Window {
 		int x_k_move;
 		int y_k_move;
 		int k_down;
+
+		GLuint skyID;
+		GLuint groundID;
 
 };
 
